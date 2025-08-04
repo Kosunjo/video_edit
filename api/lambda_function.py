@@ -71,6 +71,3 @@ def lambda_client():
     except ClientError as e:
         print(f"Client error: {str(e)}")
         logger.error("Client error: %s", {str(e)})
-
-if __name__ == '__main__':
-    app.run(debug=True)
