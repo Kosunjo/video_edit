@@ -3,36 +3,42 @@ import boto3
 import json
 import os
 from dotenv import load_dotenv
+import logging
+import uuid
+
+from botocore.exceptions import ClientError
+
 
 app = Flask(__name__)
+logger = logging.getLogger(__name__)
 
-load_dotenv(dotenv_path='aws_credentials.env')
+def invoke_agent(client, agent_id, alias_id, prompt, session_id):
+        response = client.invoke_agent(
+            agentId=agent_id,
+            agentAliasId=alias_id,
+            enableTrace=True,
+            sessionId = session_id,
+            inputText=prompt,
+            streamingConfigurations = { 
+    "applyGuardrailInterval" : 20,
+      "streamFinalResponse" : False
+            }
+        )
+        completion = ""
+        for event in response.get("completion"):
+            #Collect agent output.
+            if 'chunk' in event:
+                chunk = event["chunk"]
+                completion += chunk["bytes"].decode()
+            
+            # Log trace output.
+            if 'trace' in event:
+                trace_event = event.get("trace")
+                trace = trace_event['trace']
+                for key, value in trace.items():
+                    logging.info("%s: %s",key,value)
 
-def get_s3_client():
-    access_key = os.getenv('AWS_ACCESS_KEY_ID')
-    secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
-    session_token = os.getenv('AWS_SESSION_TOKEN')
-
-    if access_key and secret_key:
-            if session_token:
-                print("세션 토큰을 포함한 자격 증명으로 연결합니다.")
-                return boto3.client(
-                    'lambda',
-                    region_name='ap-northeast-2',
-                    aws_access_key_id=access_key,
-                    aws_secret_access_key=secret_key,
-                    aws_session_token=session_token
-                )
-            else:
-                print("세션 토큰 없이 자격 증명으로 연결합니다.")
-                return boto3.client(
-                    'lambda',
-                    region_name='ap-northeast-2',
-                    aws_access_key_id=access_key,
-                    aws_secret_access_key=secret_key
-                )
-    else:
-        raise Exception("AWS credentials not found.")
+        print(f"Agent response: {completion}")
 
 @app.route('/api/v1/lambda_function', methods=['GET'])
 def lambda_client():
@@ -41,25 +47,30 @@ def lambda_client():
     selected_type = request.args.get('selectedType')
     prompt = request.args.get('prompt')
 
-    payload = {
+    ai_prompt = {
         "selectedVideo": selected_video,
         "selectedCount": selected_count,
         "selectedType": selected_type,
         "prompt": prompt
     }
 
-    try:
-        response = lambda_client.invoke(
-            FunctionName='TEST_LAMBDA',
-            InvocationType='RequestResponse',  # 비동기이면 'Event'
-            Payload=json.dumps(payload)
-        )
+    client=boto3.client(
+            service_name="bedrock-agent-runtime",
+            region_name="ap-northeast-2") 
+    
+    agent_id = "trans"
+    alias_id = "DRAFT"
+    session_id = str(uuid.uuid4()) # 겹치지 않게 일회성 생성
+    prompt = ai_prompt
 
-        response_payload = json.load(response['Payload'])
+    try:
+        response_payload = invoke_agent(client, agent_id, alias_id, prompt, session_id)
+
         return jsonify(response_payload)
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except ClientError as e:
+        print(f"Client error: {str(e)}")
+        logger.error("Client error: %s", {str(e)})
 
 if __name__ == '__main__':
     app.run(debug=True)
