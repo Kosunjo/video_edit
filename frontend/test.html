@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Finder - 자른 영상 테스트</title>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .video-player {
+            background: black;
+            border-radius: 8px;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .video-player video {
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+        .placeholder {
+            color: #64748b;
+            font-size: 18px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .controls input, .controls button {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #475569;
+            background: #334155;
+            color: white;
+        }
+        .controls button {
+            background: #3b82f6;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background: #2563eb;
+        }
+        .result {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .video-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .info-card {
+            background: #334155;
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+        .error {
+            background: #dc2626;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+        .success {
+            background: #059669;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Video Finder - 자른 영상 테스트</h1>
+        
+        <div class="controls">
+            <input type="text" id="videoName" placeholder="영상 이름 (예: 720p.mp4)" value="720p.mp4">
+            <input type="text" id="prompt" placeholder="요청 내용 (예: 안녕이라는 말이 나오는 부분을 잘라줘)" value="안녕이라는 말이 나오는 부분을 잘라줘">
+            <button onclick="processVideo()">영상 처리 요청</button>
+        </div>
+        
+        <div class="video-player" id="videoPlayer">
+            <div class="placeholder">자른 영상이 여기에 표시됩니다</div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let currentVideoData = null;
+
+        async function processVideo() {
+            const videoName = document.getElementById('videoName').value;
+            const prompt = document.getElementById('prompt').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!videoName || !prompt) {
+                alert('영상 이름과 요청 내용을 모두 입력해주세요.');
+                return;
+            }
+            
+            // 로딩 표시
+            resultDiv.innerHTML = '<div class="loading">🔄 Agent가 영상을 처리하고 있습니다...</div>';
+            
+            try {
+                // API 호출
+                const params = new URLSearchParams({
+                    selectedVideo: videoName,
+                    selectedCount: '1',
+                    selectedType: 'highlights',
+                    prompt: prompt
+                });
+                
+                const response = await fetch(`/api/v1/lambda_function?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('API 응답:', data);
+                
+                if (data.success && data.has_video_result && data.cut_video) {
+                    // 자른 영상 성공
+                    displayCutVideo(data.cut_video);
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ ${data.message}
+                        </div>
+                        <div class="video-info">
+                            <div class="info-card">
+                                <h3>📹 영상 정보</h3>
+                                <p><strong>파일명:</strong> ${data.cut_video.filename}</p>
+                                <p><strong>구간:</strong> ${data.cut_video.start_time} ~ ${data.cut_video.end_time}</p>
+                                <p><strong>길이:</strong> ${data.cut_video.duration}</p>
+                                <p><strong>크기:</strong> ${data.cut_video.file_size}</p>
+                            </div>
+                            <div class="info-card">
+                                <h3>🔗 다운로드</h3>
+                                <p><a href="${data.cut_video.video_url}" target="_blank" style="color: #3b82f6;">영상 다운로드</a></p>
+                                ${data.cut_video.thumbnail_url ? `<p><a href="${data.cut_video.thumbnail_url}" target="_blank" style="color: #3b82f6;">썸네일 다운로드</a></p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                } else if (data.success) {
+                    // 일반 텍스트 응답
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ Agent 응답
+                        </div>
+                        <div class="info-card">
+                            <pre style="white-space: pre-wrap;">${data.response}</pre>
+                        </div>
+                    `;
+                } else {
+                    // 에러
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ 오류: ${data.error || '알 수 없는 오류'}
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('API 호출 오류:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        ❌ 네트워크 오류: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function displayCutVideo(cutVideoData) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            currentVideoData = cutVideoData;
+            
+            if (cutVideoData.video_url) {
+                videoPlayer.innerHTML = `
+                    <video controls autoplay style="width: 100%; height: 100%; border-radius: 8px;">
+                        <source src="${cutVideoData.video_url}" type="video/mp4">
+                        브라우저가 비디오를 지원하지 않습니다.
+                    </video>
+                `;
+            } else {
+                videoPlayer.innerHTML = '<div class="placeholder">비디오 URL을 찾을 수 없습니다</div>';
+            }
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Video Finder 테스트 페이지 로드됨');
+        });
+    </script>
+</body>
+</html>
