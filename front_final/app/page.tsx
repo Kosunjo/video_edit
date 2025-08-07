@@ -14,36 +14,77 @@ export default function MainPage() {
   }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files || files.length === 0) return
-
-    const selectedFile = files[0]
-    console.log("선택된 비디오 파일:", selectedFile.name)
-
-    // 백엔드에서 S3 presigned URL 요청
-    const res = await fetch("/api/v1/s3_input", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ filename: selectedFile.name, contentType: selectedFile.type })
-    })
-
-    const { uploadUrl } = await res.json()
-
-    // presigned URL로 S3 업로드
-    const uploadRes = await fetch(uploadUrl, {
-      method: "PUT",
-      body: selectedFile,
-      headers: {
-        "Content-Type": selectedFile.type
+    try {
+      console.log("파일 선택 이벤트 시작")
+      
+      const files = event.target.files
+      if (!files || files.length === 0) {
+        console.log("파일이 선택되지 않음")
+        return
       }
-    })
 
-    if (uploadRes.ok) {
-      alert("비디오 업로드 완료!")
-    } else {
-      alert("업로드 실패!")
+      const selectedFile = files[0]
+      console.log("선택된 비디오 파일:", selectedFile.name)
+      console.log("파일 타입:", selectedFile.type)
+      console.log("파일 크기:", selectedFile.size)
+
+      // 백엔드에서 S3 presigned URL 요청
+      console.log("Presigned URL 요청 시작")
+      const res = await fetch("http://43.200.6.54:5001/api/v1/s3_input", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+          filename: selectedFile.name, 
+          contentType: "video/mp4" 
+        })
+      })
+      
+      console.log("Presigned URL 응답:", res.status)
+      
+      if (!res.ok) {
+        const errorText = await res.text()
+        console.error("Presigned URL 요청 실패:", errorText)
+        alert("Presigned URL 요청 실패!")
+        return
+      }
+      
+      const responseData = await res.json()
+      console.log("Presigned URL 응답 데이터:", responseData)
+      
+      const { uploadUrl } = responseData
+      console.log("Presigned URL:", uploadUrl)
+
+      // presigned URL로 S3 업로드
+      console.log("S3 업로드 시작")
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        body: selectedFile,
+        headers: {
+          "Content-Type": selectedFile.type || "video/mp4"
+        }
+      })
+
+      console.log("S3 업로드 응답:", uploadRes.status)
+      
+      if (uploadRes.ok) {
+        console.log("비디오 업로드 성공!")
+        alert("비디오 업로드 완료!")
+      } else {
+        const errorText = await uploadRes.text()
+        console.error("S3 업로드 실패:", errorText)
+        alert("업로드 실패!")
+      }
+    } catch (error) {
+      console.error("파일 업로드 중 오류 발생:", error)
+      if (error instanceof Error) {
+        console.error("오류 스택:", error.stack)
+        console.error("오류 메시지:", error.message)
+      }
+      console.error("오류 타입:", typeof error)
+      console.error("오류 객체:", JSON.stringify(error, null, 2))
+      alert("파일 업로드 중 오류가 발생했습니다!")
     }
   }
 
@@ -240,3 +281,4 @@ export default function MainPage() {
     </div>
   )
 }
+

@@ -3,6 +3,7 @@ import json
 import boto3
 import logging
 from botocore.exceptions import ClientError
+from botocore.config import Config
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -11,11 +12,14 @@ CORS(app, resources={r'/api/*': {'origins': 'http://43.200.6.54:5003'}})
 @app.route('/api/v1/s3_input', methods=['POST'])
 def s3_upload():
 
-    s3 = boto3.client('s3')
+    # 올바른 리전 설정
+    s3 = boto3.client('s3', 
+                      region_name='ap-northeast-2',  # 이 부분이 핵심!
+                      config=Config(signature_version='s3v4'))
 
     bucket = "video-input-pipeline-20250724"
     data = request.get_json()
-    filename = data.get('filename')  
+    filename = data.get('filename')
     content_type = data.get('contentType')
 
     if not content_type:
@@ -30,7 +34,7 @@ def s3_upload():
     except ClientError as e:
         logging.error(f"Couldn't generate presigned URL: {e}")
         return jsonify({"error": "Could not generate URL"}), 500
-    
+
     return jsonify({"uploadUrl": url})
 
 if __name__ == "__main__":

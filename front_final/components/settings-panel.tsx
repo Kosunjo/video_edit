@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChevronDown, ChevronRight } from "lucide-react"
@@ -13,14 +13,6 @@ interface SettingsPanelProps {
   onCountSelect: (count: string) => void
   onTypeSelect: (type: string) => void
 }
-
-const VIDEO_OPTIONS = [
-  "business-meeting.mp4",
-  "design-workshop.mp4",
-  "marketing-presentation.mp4",
-  "tutorial-basics.mp4",
-  "product-demo.mp4",
-]
 
 const TYPE_OPTIONS = [
   { name: "highlights", icon: "🎯" },
@@ -37,6 +29,46 @@ export function SettingsPanel({
 }: SettingsPanelProps) {
   const [expandedAccordion, setExpandedAccordion] = useState<string | null>(null)
   const [countInput, setCountInput] = useState("")
+  const [videoOptions, setVideoOptions] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // S3에서 비디오 목록 가져오기
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        setIsLoading(true)
+        console.log("S3에서 비디오 옵션을 가져오는 중...")
+        
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://43.200.6.54:5000"}/api/v1/bucketdata`)
+        
+        console.log("API 응답:", response.status)
+        
+        if (response.ok) {
+          const data = await response.json()
+          console.log("받은 데이터:", data)
+          
+          // 비디오 파일만 필터링
+          const videoExtensions = [".mp4", ".avi", ".mov", ".webm", ".mkv", ".flv", ".wmv"]
+          const videoFiles = data.filter((item: string) => 
+            videoExtensions.some(ext => item.toLowerCase().endsWith(ext))
+          )
+          
+          console.log("필터링된 비디오 파일들:", videoFiles)
+          setVideoOptions(videoFiles)
+        } else {
+          console.log("API 오류:", response.status)
+          setVideoOptions(["business-meeting.mp4", "design-workshop.mp4", "marketing-presentation.mp4", "tutorial-basics.mp4", "product-demo.mp4"])
+        }
+      } catch (error) {
+        console.error("비디오 옵션 로딩 오류:", error)
+        setVideoOptions(["business-meeting.mp4", "design-workshop.mp4", "marketing-presentation.mp4", "tutorial-basics.mp4", "product-demo.mp4"])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchVideos()
+  }, [])
 
   const toggleAccordion = (item: string) => {
     setExpandedAccordion(expandedAccordion === item ? null : item)
@@ -79,18 +111,28 @@ export function SettingsPanel({
 
           {expandedAccordion === "Video Input" && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-2xl max-h-40 overflow-y-auto border border-gray-700/50 z-50">
-              {VIDEO_OPTIONS.map((video, index) => (
-                <div
-                  key={index}
-                  className="px-4 py-3 hover:bg-gray-700/60 cursor-pointer border-b border-gray-700/30 last:border-b-0 text-sm text-gray-200 transition-colors duration-150 hover:text-purple-400"
-                  onClick={() => {
-                    onVideoSelect(video)
-                    setExpandedAccordion(null)
-                  }}
-                >
-                  📹 {video}
+              {isLoading ? (
+                <div className="px-4 py-3 text-sm text-gray-400">
+                  비디오 목록을 로딩 중...
                 </div>
-              ))}
+              ) : videoOptions.length > 0 ? (
+                videoOptions.map((video: string, index: number) => (
+                  <div
+                    key={index}
+                    className="px-4 py-3 hover:bg-gray-700/60 cursor-pointer border-b border-gray-700/30 last:border-b-0 text-sm text-gray-200 transition-colors duration-150 hover:text-purple-400"
+                    onClick={() => {
+                      onVideoSelect(video)
+                      setExpandedAccordion(null)
+                    }}
+                  >
+                    📹 {video}
+                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-3 text-sm text-gray-400">
+                  비디오 파일이 없습니다
+                </div>
+              )}
             </div>
           )}
         </div>
