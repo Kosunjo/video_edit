@@ -6,18 +6,18 @@ Transform: AWS::Serverless-2016-10-31
 Description: An AWS Serverless Application Model template describing your function.
 
 parameters:
-  inputBucket:
+  InputBucketName:
     Type: String
-  outputBucket:
+  OutputBucketName:
     Type: String
-  mediaConvertName:
+  MediaConvertName:
     Type: String
 
 Resources:
   videoconversionlambda:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Ref mediaConvertName
+      FunctionName: !Ref MediaConvertName
       CodeUri: .
       Description: ''
       MemorySize: 128
@@ -120,7 +120,7 @@ Resources:
               detail:
                 bucket:
                   name:
-                    - !Ref inputBucket
+                    - !Ref InputBucketName
                 object:
                   key:
                     - prefix: original/

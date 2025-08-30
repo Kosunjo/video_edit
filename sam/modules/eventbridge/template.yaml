@@ -9,7 +9,7 @@ Parameters:
     Type: String
   EventBridgeName:
     Type: String
-  s3_input_path:
+  s3inputpath:
     Type: String
 
 Resources:
@@ -26,10 +26,10 @@ Resources:
         detail:
           bucket:
             name:
-              - video-input-pipeline-20250724
+              - !Ref InputBucketName
           object:
             key:
-              - prefix: !Ref s3_input_path
+              - prefix: !Ref s3inputpath
       State: ENABLED
       Targets:
         - Id: StepFunctionTarget

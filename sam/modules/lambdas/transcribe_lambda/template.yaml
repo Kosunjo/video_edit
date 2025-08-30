@@ -12,14 +12,14 @@ Parameters:
   OutputBucketName:
     Type: String
     Description: "S3 출력 버킷 이름"
-  transcribeName:
+  TranscribeName:
     Type: String
 
 Resources:
   transcribe:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Ref transcribeName
+      FunctionName: !Ref TranscribeName
       CodeUri: .
       Description: ''
       MemorySize: 128
@@ -68,7 +68,7 @@ Resources:
                 - logs:PutLogEvents
               Resource:
                 - >-
-                  !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${transcribeName}:*
+                  !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${TranscribeName}:*
       RecursiveLoop: Terminate
       SnapStart:
         ApplyOn: None

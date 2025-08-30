@@ -15,13 +15,13 @@ Parameters:
   EventBridgeName:
     Type: String
     Description: "EventBridge Rule 이름"
-  s3_input_path:
+  s3inputpath:
     Type: String
     Description: "S3 입력 경로"
-  transcribeName:
+  TranscribeName:
     Type: String
     Description: "Transcribe Lambda 함수 이름"
-  mediaconvertName:
+  MediaConvertName:
     Type: String
     Description: "MediaConvert Lambda 함수 이름"
 
@@ -30,39 +30,39 @@ Resources:
     Type: AWS::Serverless::Application
     Properties:
       Location: ./modules/eventbridge/template.yaml
-    Parameters:
-      StepFunctionName: !Ref StepFunctionName
-      InputBucketName: !Ref InputBucketName
-      EventBridgeName: !Ref EventBridgeName
-      s3_input_path: !Ref s3_input_path
-
-  SQSModule:
-    Type: AWS::Serverless::Application
-    Properties:
-      Location: ./modules/sqs/template.yaml
+      Parameters:
+        StepFunctionName: !Ref StepFunctionName
+        InputBucketName: !Ref InputBucketName
+        EventBridgeName: !Ref EventBridgeName
+        s3inputpath: !Ref s3inputpath
+    DependsOn: StepFunctionsModule
 
   TranscribeLambdaModule:
     Type: AWS::Serverless::Application
     Properties:
       Location: ./modules/lambdas/transcribe_lambda/template.yaml
-    Parameters:
-      InputBucketName: !Ref InputBucketName
-      OutputBucketName: !Ref OutputBucketName
-      transcribeName: !Ref transcribeName
+      Parameters:
+        InputBucketName: !Ref InputBucketName
+        OutputBucketName: !Ref OutputBucketName
+        TranscribeName: !Ref TranscribeName
 
   MediaConvertLambdaModule:
     Type: AWS::Serverless::Application
     Properties:
       Location: ./modules/lambdas/mediaconvert_lambda/template.yaml
-    Parameters:
-      InputBucketName: !Ref InputBucketName
-      OutputBucketName: !Ref OutputBucketName
-      mediaConvertName: !Ref mediaConvertName
+      Parameters:
+        InputBucketName: !Ref InputBucketName
+        OutputBucketName: !Ref OutputBucketName
+        MediaConvertName: !Ref MediaConvertName
 
   StepFunctionsModule:
     Type: AWS::Serverless::Application
     Properties:
       Location: ./modules/stepfunctions/template.yaml
-    Parameters:
-      transcribeName: !Ref transcribeName
-      mediaConvertName: !Ref mediaConvertName
+      Parameters:
+        transcribeName: !Ref TranscribeName
+        mediaConvertName: !Ref MediaConvertName
+    DependsOn:
+      - MediaConvertLambdaModule
+      - TranscribeLambdaModule
+

@@ -1,0 +1,19 @@
+version = 0.1
+
+[default.deploy.parameters]
+StepFunctionName = "VideoProcessingWorkflow"
+InputBucketName = "video-input-pipeline-5111"
+OutputBucketName = "video-output-pipeline-5111"
+EventBridgeName = "call_stepfunction"
+s3inputpath = "original/"
+TranscribeName = "Transcribe_Lambda"
+MediaConvertName = "MediaConvert_Lambda"
+stack_name = "video-stack"
+resolve_s3 = true
+s3_prefix = "video-stack"
+region = "ap-northeast-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
+disable_rollback = true
+image_repositories = []
+parameter_overrides = "StepFunctionName=\"VideoProcessingWorkflow\" InputBucketName=\"video-input-pipeline-5111\" OutputBucketName=\"video-output-pipeline-5111\" EventBridgeName=\"call_stepfunction\" s3inputpath=\"original/\" TranscribeName=\"Transcribe_Lambda\" MediaConvertName=\"MediaConvert_Lambda\""
