@@ -58,11 +58,11 @@ Resources:
                       Payload.$: $
             End: true
       DefinitionSubstitutions:
-        lambdainvoke_FunctionName_05049e34: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${transcribeName}:$LATEST
-        lambdainvoke_FunctionName_4cd240c9: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${mediaConvertName}:$LATEST
+        TranscribeLambda: !Ref transcribeName
+        MediaConvertLambda: !Ref mediaConvertName
       Name: StateMachine5b3433f1
       Type: STANDARD
-      Role: arn:aws:iam::567279714866:role/VideoProcessingStepFunctionsRole
+      Role: !Sub arn:aws:iam::${AWS::AccountId}:role/VideoProcessingStepFunctionsRole
       Logging:
         Level: 'OFF'
         IncludeExecutionData: false
