@@ -2,7 +2,8 @@
 영상을 sd 화질로 추출하여 챗봇을 이용한 영상 클립 추출
 
 ### 아키텍쳐
-https://github.com/user-attachments/assets/09a906d5-7ab1-4a08-9c27-ccddab46c20a
+<img width="948" height="637" alt="image" src="https://github.com/user-attachments/assets/90f21437-d0b4-4aef-b459-2d7e3a8721ce" />
+
 
 ### 커밋컨벤션
 
