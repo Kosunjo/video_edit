@@ -1,6 +1,11 @@
 # video_edit
 영상을 sd 화질로 추출하여 챗봇을 이용한 영상 클립 추출
 
+### 시연영상
+<img width="800" height="450" alt="1-ezgif com-video-to-gif-converter (1)" src="https://github.com/user-attachments/assets/9a04e561-3954-4a4d-9699-fc15a5523705" />
+
+
+
 ### 아키텍쳐
 <img width="948" height="637" alt="image" src="https://github.com/user-attachments/assets/90f21437-d0b4-4aef-b459-2d7e3a8721ce" />
 
