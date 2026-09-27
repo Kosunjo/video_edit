@@ -1,14 +1,28 @@
 # video_edit
+<img width="960" height="540" alt="클립하우스" src="https://github.com/user-attachments/assets/0996453c-5302-4efa-9bd9-07a9fe905935" />
+
+
 영상을 sd 화질로 추출하여 챗봇을 이용한 영상 클립 추출
 
-### 시연영상
+# 🎞시연영상
 <img width="800" height="450" alt="1-ezgif com-video-to-gif-converter (1)" src="https://github.com/user-attachments/assets/9a04e561-3954-4a4d-9699-fc15a5523705" />
 
+하이라이트 제작
+
+<img width="800" height="450" alt="1-ezgif com-video-to-gif-converter (2)" src="https://github.com/user-attachments/assets/977ba76c-ed09-4de8-8b1a-157ba5d26f3c" />
+
+대사를 통한 클립 추출
+https://drive.google.com/file/d/1VosMvcINC734VlFfujKc0S92UFEBbRRn/view
 
 
-### 아키텍쳐
+# 🛠아키텍쳐
 <img width="948" height="637" alt="image" src="https://github.com/user-attachments/assets/90f21437-d0b4-4aef-b459-2d7e3a8721ce" />
 
+
+# 📆프로젝트 기간
+__2025.07.09 ~ 2025.09.04__
+
+</br >
 
 ### 커밋컨벤션
 
@@ -28,43 +42,3 @@
 | :construction_worker: `ci` | 배포 방식 수정 및 새로 추가                            |
 | :green_heart: `ci`         | 기존 배포 스크립트 수정                               |
 
-
-# LetsGit
-Git 초보를 위한 연습장
-
-### 𝟭. 'LetsGit' Clone
-```
-git clone <깃허브 주소>
-```
-- 미션을 하기 위해서 제가 올려놓은 프로젝트를 clone 해주세요 !!
-
-### 𝟮. ISSUE 생성
-- LetsGit의 Issues를 들어가주세요.
-
-- New issue > ✨ [FEATURE] Get Started 에 들어가서 이슈 생성을 해보세요. 미리 템플릿을 만들어두었으니 작성해보세요.
-
-### 𝟯. branch 만들기
-```
-1. git pull origin main -> 다른 사람이 업데이트해놨다면 먼저 pull 해주세요!
-2. git branch -> 브랜치 확인
-3. git branch feature/#1 -> 브랜치 이름은 자신이 생성한 이슈 번호로 // 꼭 main 에서 브랜치 생성하기기
-4. git branch -> 잘 생성됐는지 확인
-5. git checkout feature/#1 -> 자신의 브랜치로 이동하기
-6. git branch -> 내가 어디에 있는지 확인 또 확인... 
-```
-
-### 5. 깃허브에 업로드 해보기
-```
-1. git add .
-2. git commit -m "커밋메시지" 
-3. git push origin "자신의 branch 이름"
-```
-
-### 6. PR 생성
-- push를 하면 위에 pr 생성을 하도록 문구가 뜹니다.
-
-- 미리 만들어둔 PR 템플릿에 작성해주세요. (resolve 옆에는 자신의 이슈 번호)
-
-### 7. Merge 하기
-- PR까지 완료했다면 합쳐봅시다 !!! 
-- 'Squash and merge' 이용용
